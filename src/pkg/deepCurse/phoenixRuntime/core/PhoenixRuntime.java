@@ -4,7 +4,7 @@ public class PhoenixRuntime {
 
 	public void launch(PhoenixSettings settings, PhoenixRunnable runnable) {
 		
-		Thread phoenixServerThread = new Thread(runnable, "phoenix-server");
+//		Thread phoenixServerThread = new Thread(runnable, "phoenix-server");
 		
 	}
 	
