@@ -13,12 +13,14 @@ public class Main {
 
 		PhoenixSettings settings = new PhoenixSettings().setCommonPort(1209);
 
-		settings.onLockedRunnable = () -> {
-			System.out.println("Is Locked, sending UPDATE");
+		PhoenixRuntime runtime = new PhoenixRuntime(settings, new Boot());
+
+		runtime.onLockedRunnable = () -> {
+			System.out.println("Is Locked, sending <shutdown>");
 			try {
-				Socket cSocket = new Socket("127.0.0.1", 1209);
+				Socket cSocket = new Socket("127.0.0.1", settings.commonPort);
 				DataOutputStream dOut = new DataOutputStream(cSocket.getOutputStream());
-				dOut.writeUTF("restart");
+				dOut.writeUTF("poweroff");
 				dOut.flush();
 				dOut.close();
 				cSocket.close();
@@ -27,8 +29,6 @@ public class Main {
 			}
 
 		};
-
-		PhoenixRuntime runtime = new PhoenixRuntime(settings, new Boot());
 
 		runtime.launch();
 
