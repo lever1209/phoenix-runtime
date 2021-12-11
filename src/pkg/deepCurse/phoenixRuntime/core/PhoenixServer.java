@@ -1,90 +1,35 @@
 package pkg.deepCurse.phoenixRuntime.core;
 
 import java.io.DataInputStream;
+import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Scanner;
-
-import pkg.deepCurse.phoenixRuntime.tests.Main;
-
 
 public class PhoenixServer {
 
-	public static boolean socketShutdown = false;
-	public static boolean serverShutdown = false;
+	public PhoenixServer(PhoenixSettings settings, ServerSocket serverSocket) throws IOException {
 
-	public static void sockets() {
-		try {
-			boolean done = false;
+		boolean done = false;
 
-			while (!done & !serverShutdown) {
-				ServerSocket serverSocket = new ServerSocket(1209);
-				Socket socket = serverSocket.accept();
-				DataInputStream dIn = new DataInputStream(socket.getInputStream());
-				System.out.println(Main.pid + " : SOCKET RECEIVED");
-				byte messageType = dIn.readByte();
+		while (!done && settings.isEnabled) {
 
-				switch (messageType) {
-				case 1: // FORCE SHUTDOWN
-					System.out.println(Main.pid + " : SOCKET : SHUTDOWN");
-					socketShutdown = true;
-					serverShutdown = true;
-					socket.close();
-					serverSocket.close();
-					dIn.close();
+			Socket socket = serverSocket.accept();
+			DataInputStream dIn = new DataInputStream(socket.getInputStream());
+			String message = dIn.readUTF();
 
-					break;
-				case 2: // FORCE UPDATE
-					System.out.println(Main.pid + " : SOCKET : UPDATE");
-					Main.forceUpdate = true;
-					// serverShutdown = true;
-					socket.close();
-					serverSocket.close();
-					dIn.close();
-					break;
-				case 3: // RESPAWN
-					System.out.println(Main.pid + " : SOCKET : RESPAWN");
-					Main.respawn = true;
-					serverShutdown = true;
-					socket.close();
-					serverSocket.close();
-					dIn.close();
-					break;
-				default:
-					done = true;
-					break;
-				}
+//			if (message.startsWith(settings.auth)) {
+//			if (settings.actions.containsKey(message.substring(settings.auth.length()))) {
 
-			}
+			settings.commandManager.run(message, settings);
 
-		} catch (Throwable e) {
-			e.printStackTrace();
-		}
+//			}
+//			} else {
+//				System.out.println("(##WARN##) INSECURE CONNECTION: " + socket.getRemoteSocketAddress());
+//			}
 
-	}
+			dIn.close();
+			socket.close();
 
-	public static void commands() {
-		@SuppressWarnings("resource")
-		Scanner scan = new Scanner(System.in);
-		while (true) {
-			System.out.print(Main.pid + " " + "" + " ~> ");
-			String command = scan.nextLine();
-
-			if (command.contentEquals("update")) {
-				Main.forceUpdate = true;
-			}
-
-			if (command.contentEquals("time")) {
-				SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
-				Date date = new Date(System.currentTimeMillis());
-				String timeC = formatter.format(date);
-				System.out.println(System.currentTimeMillis() + " : " + timeC);
-			}
-			// System.out.println("CLOSE");
-			// scan.close();
 		}
 	}
-
 }
